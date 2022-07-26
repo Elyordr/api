@@ -25,6 +25,7 @@ const url = 'https://test.api.hyssa.udevs.io'
 const static_otp = '667875'
 const env = Cypress.env
 const user_id = '0017Q00000S8T8fQAF'
+const super = 'superman'
 
 describe('Hyssa API test', function(){
           // it('Investor CR', function() {
