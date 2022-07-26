@@ -25,7 +25,6 @@ const url = 'https://test.api.hyssa.udevs.io'
 const static_otp = '667875'
 const env = Cypress.env
 const user_id = '0017Q00000S8T8fQAF'
-const super = 'superman'
 
 describe('Hyssa API test', function(){
           // it('Investor CR', function() {
@@ -194,33 +193,33 @@ describe('Hyssa API test', function(){
                 
             var investor_pocket_id = Cypress.env('invest_pocket_id')
 
-                //Get stock price
-            cy.request({
-              method: 'GET',
-              url: url + '/integration/fix/get-last-quote/XPEV.NYSE'
-            })
-            .then(function(response) {
-              Cypress.env('stock_price', response.body.data.ticks[0].ask[0].value)
-              cy.log(Cypress.env('stock_price'))
-            })
+            //     //Get stock price
+            // cy.request({
+            //   method: 'GET',
+            //   url: url + '/integration/fix/get-last-quote/ABCL.NASDAQ'
+            // })
+            // .then(function(response) {
+            //   Cypress.env('stock_price', response.body.data.ticks[0].ask[0].value)
+            //   cy.log(Cypress.env('stock_price'))
+            // })
 
-            var price = Cypress.env('stock_price')
+            // var price = Cypress.env('stock_price')
 
-                //Get Buy Tax
-            cy.request({
-              method: 'POST',
-              url: url + '/pocket/operation/tax',
-              body: {
-                  "amount": price,
-                  "operation_name": "Buy",
-                  "symbol_id": "XPEV.NYSE",
-                  "user_id": user_id
-              }
-            })
-            .then(function(response) {
-              Cypress.env('b_tax', Math.round(response.body.data.tax_calculated))
-              cy.log(Cypress.env('b_tax'))
-            })
+            //     //Get Buy Tax
+            // cy.request({
+            //   method: 'POST',
+            //   url: url + '/pocket/operation/tax',
+            //   body: {
+            //       "amount": price,
+            //       "operation_name": "Buy",
+            //       "symbol_id": "XPEV.NYSE",
+            //       "user_id": user_id
+            //   }
+            // })
+            // .then(function(response) {
+            //   Cypress.env('b_tax', Math.round(response.body.data.tax_calculated))
+            //   cy.log(Cypress.env('b_tax'))
+            // })
 
                 //Buy
             cy.request({
@@ -231,7 +230,7 @@ describe('Hyssa API test', function(){
                 "currency": "USD",
                 "quantity": 1,
                 "stock_pocket_id": Cypress.env('invest_pocket_id'),
-                "symbol_id": "XPEV.NYSE",
+                "symbol_id": "ABCL.NASDAQ",
                 "user_id": user_id
               }
             })
@@ -243,10 +242,51 @@ describe('Hyssa API test', function(){
                 //Check order
               cy.request({
                 method: 'GET',
-                url: url + '/investor/orders?investor-id=' + user_id
+                url: url + '/investor/orders?investor-id=' + user_id + '&page=1&limit=20'
               })
               .then(function(response) {
-                expect(response.body.data.orders).to.have.value(Cypress.env('order_id'))
+                let index
+                let order = response.body.data.orders
+                for (let i = 0; i < order.length; i++) {
+                    if (order[i].id === Cypress.env('order_id')) {
+                      index = i
+                    }
+                }
+                expect(response.body.data.orders[index].id).to.eq(Cypress.env('order_id'))
+              })
+
+              //Sell
+            cy.request({
+              method: 'POST',
+              url: url + '/pocket/operation/sell',
+              body: {
+                "cash_pocket_id": Cypress.env('cash_pocket_id'),
+                "currency": "USD",
+                "quantity": 1,
+                "stock_pocket_id": Cypress.env('invest_pocket_id'),
+                "symbol_id": "ABCL.NASDAQ",
+                "user_id": user_id
+              }
+            })
+            .then(function(response) {
+                Cypress.env('order_id', response.body.data.id)
+                cy.log(Cypress.env('order_id'))
+              })
+
+                //Check order
+              cy.request({
+                method: 'GET',
+                url: url + '/investor/orders?investor-id=' + user_id + '&page=1&limit=20'
+              })
+              .then(function(response) {
+                let index
+                let order = response.body.data.orders
+                for (let i = 0; i < order.length; i++) {
+                    if (order[i].id === Cypress.env('order_id')) {
+                      index = i
+                    }
+                }
+                expect(response.body.data.orders[index].id).to.eq(Cypress.env('order_id'))
               })
           })
 })
