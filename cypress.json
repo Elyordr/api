@@ -1,1 +1,11 @@
-{}
+{
+          "env": {
+                    "cash_pocket_id": "",
+                    "presum": "",
+                    "t_tax": "",
+                    "w_tax": "",
+                    "invest_pocket_id": "",
+                    "order_id": "",
+                    "purchased_stocks": ""
+          }
+        }
